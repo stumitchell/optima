@@ -1,0 +1,205 @@
+\documentclass{optima}
+
+\begin{document}
+   
+
+
+\head{Jorge Nocedal}{Finding the middle ground between  first and second-order methods}
+
+
+\noindent
+In the last few years, we have witnessed the emergence of first-order methods for a
+variety of nonlinear optimization applications. The advocacy of first-order methods
+is, however, in stark contrast with much of the algorithmic practice of the last 30
+years that has emphasized methods based on quadratic models to achieve faster
+convergence. Therefore, it is reasonable to ask whether this shift in emphasis is well
+justified.
+
+Several arguments have been advanced in favor of first-order methods. 
+ 
+\begin{compactenum}[1.]
+\item For very large and data-intensive problems, inexpensive first-order methods are more
+efficient than more rapidly convergent, but more expensive, methods. Furthermore, in
+cases where approximate solutions are adequate the benefits of second-order methods
+are not realized since the optimization is terminated early.
+\item In some applications, derivatives are not available, and approximating Hessian
+matrices is very costly in methods for derivative-free optimization.
+\item  For non-smooth problems, quadratic approximations may not be appropriate.
+\item One can establish complexity results for first-order methods on certain challenging problem classes. To establish similar results for higher-order methods requires unrealistic assumptions.
+\item First-order methods are more than adequate for problems that contain uncertainty
+in the data. 
+\end{compactenum}
+%
+Undoubtedly, there are some cases when first-order methods are the right tool for the
+job. But in many contexts, some of the arguments given above are not well justified
+and lead to algorithms that are unnecessarily slow. The key observation of this note
+is that \emph{simple} quadratic models that do not attempt to accurately approximate
+the Newton model often give rise to very attractive algorithms for many of the
+situations listed above. Indeed, the judicious use of selective second-order
+information can bring dramatic savings in computing time.
+
+The article by Katya Scheinberg in this issue deals with derivative-free optimization,
+one of the areas in which the use of (low quality) quadratic models has proved
+surprisingly effective. Her article explores the limits of inaccuracy in model-based
+methods for derivative-free optimization, a class of methods pioneered by Powell and
+by Scheinberg and her collaborators; see \cite{dfobook}. Numerical experience has
+shown that quadratic models give rise to much more effective methods than linear
+models, even though they require $O(n^2)$ vs $O(n)$ function values to define the
+model via interpolation. Furthermore, Powell \cite{Powe03b} has recently proposed a
+framework for \emph{updating} quadratic models using only $O(n)$ interpolation points,
+which allows the method to solve much larger problems than in the past. Needless to
+say, such an approach does not aim to generate a good approximation of the Hessian
+matrix -- and there is no hope of obtaining superlinear convergence -- but the method
+constitutes a superior approach for derivative-free optimization. Some remarkable
+numerical experiments by Mor\'e and Wild \cite{WildMore09} indicate that Powell's
+model-based method is very effective (and clearly outperforms a leading pattern search
+method) even for certain classes of \emph{nonsmooth} problems. This efficiency is
+achieved in spite of the very low accuracy of their quadratic approximations. As
+Scheinberg discusses in this issue of Optima, one needs to impose only minimal quality
+controls to promote convergence and ensure good performance.
+
+Equally surprising is the recent study by Lewis and Overton \cite{lewoverton} on
+general-purpose methods for the minimization of locally Lipschitz nonsmooth functions.
+They observe that the BFGS quasi-Newton method is far more effective than more
+conservative techniques, such as bundle methods. Since locally Lipschitz functions are
+differentiable almost everywhere, the BFGS iteration (with an appropriate line search)
+is normally well defined and is able to approximate solutions even when they occur at
+a point of nondifferentiability \footnote{I should note that the observations in
+\cite{lewoverton} are not entirely new; empirical evidence of the efficiency of BFGS
+on non-smooth problems has been reported at various times in the literature, dating at
+least since 1982 \cite{Lemar82, LukVle99}.}. As is the case in Powell's method for
+derivative-free optimization, the quadratic models become extremely ill conditioned,
+but this does not prevent the methods from moving along fruitful search directions.
+Lewis and Overton do not provide convergence results (except for very simple special
+cases) but offer good insights; for example they report that the BFGS matrix often
+provides a good approximation of the so-called U and V spaces associated with the
+objective function. One cannot yet claim that the BFGS method represents a
+general-purpose algorithm for non-smooth optimization because it typically breaks down
+close to the solution and is therefore unable to provide a certificate of optimality.
+Nevertheless, the renewed interest in the use of second-order information is yet to be
+fully developed in non-smooth optimization.
+
+Two of the most popular methods for smooth large-scale optimization, the inexact (or
+truncated) Newton method and limited memory BFGS method, are typically implemented so
+that the rate of convergence is only linear. They are good examples of algorithms that
+fall between first and second-order methods. Let me mention three specific application
+areas where significant progress has been made by designing new methods of this kind.
+
+Rigid body simulations for computer game simulations often lead to linear
+complementarity problems (LCP) that must be solved very quickly because graphics
+operate at 60 frames per second. Unlike studio animation movies, computer game
+animations need not be of very high quality, and therefore the solution of the linear
+complementarity problem is terminated quite early. Game developers typically use the
+projected Gauss-Seidel (or projected SOR) method to compute very approximate solutions
+of the linear complementarity problems. This prototypical first-order method has been
+advocated by the gaming community because the use of second-order methods is not
+practical (interestingly, interior-point methods are not well suited in this case).
+
+Kocvara et al. \cite{KocZow94} and Morales et al. \cite{SmelMorNocedal} have shown
+that, by interlacing a subspace improvement iteration with the projected Gauss-Seidel
+iteration, it is possible to compute very accurate solutions in less time. When the
+LCP is symmetric, the subspace improvement space amounts to the minimization of an
+associated quadratic program over a set of active free variables, and
+\cite{SmelMorNocedal} shows that it is effective to use exact second order information
+on this subspace. The key observation is that the subspace improvement phase greatly
+accelerates the identification of the optimal constraints -- it does not simply
+provide a higher rate of convergence once this identification has been made. These
+advances might not be altogether surprising given that Polak \cite{Poly69}
+demonstrated long ago that the gradient projection method benefits greatly from a
+subspace minimization phase. Nevertheless, it is often not straightforward to
+translate general design principles from one context to another one.
+
+In fact, essentially the same approach that proved effective in computer game
+simulations has recently been applied by Wen et al. \cite{Zaiwenetal} in compressive
+sensing applications, and by Feng et al. \cite{FengMoraNoceLinet} in the pricing of
+American options. In these two papers the subspace minimization phase uses an
+iterative approach (CG or BFGS for compressive sensing, GMRES with ILU preconditioner,
+for options pricing). Significant speedups are obtained with respect to first-order
+methods.
+
+It is difficult to explain precisely why a minimal use of second-order information can
+bring substantial benefits. In the case of BFGS for nonsmooth optimization,
+approximate Hessians provide much needed information of curvature of functions, but
+also, more importantly, information about changes in the function due to
+discontinuities in first-order derivatives. All the new methods I have mentioned in
+this column, can be seen as occupying a middle ground between first and second-order
+methods. This is fertile territory.
+   
+ 
+\begin{jinfo}
+Jorge Nocedal, Department of Electrical Engineering and Computer Science, Northwestern University, Evanston, IL,
+USA. \href{mailto:nocedal@eecs.northwestern.edu}{\url{nocedal@eecs.northwestern.edu}}
+
+\end{jinfo}
+
+\begin{thebibliography}{10}
+
+\bibitem{dfobook}
+A.~R. Conn, K.~Scheinberg, and L.~Vicente.
+\newblock \emph{Introduction to derivative-free optimization}.
+\newblock SIAM, Philadelphia, USA, 2009.
+
+\bibitem{FengMoraNoceLinet}
+L.~Feng, J.L. Morales, J.~Nocedal, and V.~Linetsky.
+\newblock On the solution of complementarity problems arising in {American}
+  options pricing.
+\newblock Technical Report OTC 09/02, Northwestern University, 2009.
+
+\bibitem{KocZow94}
+M.~Kocvara and J.~Zowe.
+\newblock An iterative two-step algorithm for linear complementarity problems.
+\newblock \emph{Numerische Mathematik}, 68:95--106, 1994.
+
+\bibitem{Lemar82}
+C.~Lemar\'echal.
+\newblock Numerical experiments in nonsmooth optimization.
+\newblock In E.~A. Nurminski, editor, \emph{Progress in nondifferentiable
+  optimization}, volume~26, pages 61--84, Laxenburg, Austria, 1982. The
+  Interface Foundation of North America.
+
+\bibitem{lewoverton}
+A.S. Lewis and M.L. Overton.
+\newblock Nonsmooth optimization via {BFGS}.
+\newblock Technical report, New York University, 2009.
+\newblock submitted to {SIAM} Journal on Optimization.
+
+\bibitem{LukVle99}
+L.~Luksan and J.~Vlcek.
+\newblock Globally convergent variable metric methods for convex nonsmooth
+  unconstrained optimization.
+\newblock \emph{Journal of Optimization Theory and Applications},
+  (102):593--613, 1999.
+
+\bibitem{SmelMorNocedal}
+J.L. Morales, J.~Nocedal, and M.~Smelyanskiy.
+\newblock An algorithm for the fast solution of linear complementarity
+  problems.
+\newblock \emph{Numerische Mathematik}, 111(2):251--266, 2008.
+
+\bibitem{WildMore09}
+J.~J. Mor\'e and S.~M. Wild.
+\newblock Benchmarking derivative-free optimization algorithms.
+\newblock \emph{SIAM J.~Optimization}, 20(1):172--191, 2009.
+
+\bibitem{Poly69}
+B.~T. Polyak.
+\newblock The conjugate gradient method in extremal problems.
+\newblock \emph{U.S.S.R. Computational Mathematics and Mathematical Physics},
+  9:94--112, 1969.
+
+\bibitem{Powe03b}
+M.~J.~D. Powell.
+\newblock Least {F}robenius norm updating of quadratic models that satisfy
+  interpolation conditions.
+\newblock \emph{Mathematical Programming}, 100(1):183--215, 2004.
+
+\bibitem{Zaiwenetal}
+Z.~Wen, W.~Yin, D.~Goldfarb, and Y.~Zhang.
+\newblock A fast algorithm for sparse reconstruction based on shrinkage,
+  subspace optimization and continuation.
+\newblock Technical Report CAAM Technical Report TR09-01, Rice University,
+  2009.
+
+\end{thebibliography}
+   
+\end{document}
